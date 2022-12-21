@@ -20,7 +20,7 @@ class TimeLogger
     private $lastTime;
 
     /**
-     * Хранилище промежутков времени между вызовами записи в логфайл.
+     * Хранилище времени каждой сделанной записи в логфайл.
      *
      * @var array
      */
@@ -50,7 +50,8 @@ class TimeLogger
      *   1. Индекс записи;
      *   2. Разница во времени между текущей записью и предыдущей.
      *      Если текущая запись первая, то разница ищется между ней и собзданием объекта.
-     * При необходимости 3-им пунктом может быть запись сообщения. По умолчанию сообщение не добавляется.
+     *
+     * При необходимости 3-им пунктом может быть текст сообщения. По умолчанию сообщение не добавляется.
      *
      * Возвращает индекс текущей записи.
      *
@@ -60,10 +61,11 @@ class TimeLogger
     public function log(string $msg = ''): int
     {
         $time = microtime(true) - $this->lastTime;
-        $this->timeStorage[] = $time;
-        $this->lastTime = microtime(true);
+        $this->timeStorage[]
+            = $this->lastTime
+            = microtime(true);
 
-        $note = 'TL : <' . $this->currentIndex++ . '> | time: ' . number_format($time, 6, '.', ' ');
+        $note = 'TL : <' . $this->currentIndex . '> | time: ' . number_format($time, 6, '.', ' ');
 
         if ($msg) $note .= ' | ' . $msg;
 
@@ -71,7 +73,7 @@ class TimeLogger
 
         file_put_contents($this->file, $note, FILE_APPEND);
 
-        return $this->currentIndex;
+        return $this->currentIndex++;
     }
 
     /** Очищает логфайл и сбрасывает текущее состояние объекта. */
@@ -84,18 +86,17 @@ class TimeLogger
     }
 
     /**
-     * По умолчанию находит сумму промежутков времени от первой до последней записи.
-     * При необходимости можно передать от какой точки начинать суммировать промежутки времени.
+     * По умолчанию находит время между первой и последней записью в логфайл.
+     * При необходимости можно произвольно выбрать индексы и найти время между ними.
      *
-     * @param int $fromIndex
+     * @param int $from
+     * @param int $to
      * @return float
      */
-    public function findTimeSum(int $fromIndex = 0): float
+    public function findTimeSum(int $from = 0, int $to = 0): float
     {
-        if ($fromIndex > $this->currentIndex) $fromIndex = $this->currentIndex;
+        foreach ([&$from, &$to] as &$i) if ($i > ($this->currentIndex - 1)) $i = ($this->currentIndex - 1);
 
-        for ($i = $fromIndex, $timeSum = 0; $i < count($this->timeStorage); $i++) $timeSum += $this->timeStorage[$i];
-
-        return $timeSum;
+        return abs($this->timeStorage[$to] - $this->timeStorage[$from]);
     }
 }
