@@ -34,7 +34,7 @@ class TimeLogger
     private $currentIndex = 0;
 
     /**
-     * Принимает строкеу, в которой указан файл и путь до него, и устанавливает текущее время.
+     * Принимает строку, в которой указан файл и путь до него, и устанавливает текущее время.
      *
      * @param string $file
      * @example $file = '/Path/To/Filename.extension';
