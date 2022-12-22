@@ -87,13 +87,13 @@ class TimeLogger
 
     /**
      * По умолчанию находит время между первой и последней записью в логфайл.
-     * При необходимости можно произвольно выбрать индексы и найти время между ними.
+     * При необходимости можно найти интервал между произвольно выбранных индексов среди существующих записей.
      *
      * @param int $from
      * @param int $to
      * @return float
      */
-    public function findTimeSum(int $from = 0, int $to = 0): float
+    public function findInterval(int $from = 0, int $to = 0): float
     {
         foreach ([&$from, &$to] as &$i) if ($i > ($this->currentIndex - 1)) $i = ($this->currentIndex - 1);
 
