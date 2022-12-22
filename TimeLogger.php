@@ -48,7 +48,7 @@ class TimeLogger
     /**
      * Делает запись в установленный логфайл, в которой есть:
      *   1. Индекс записи;
-     *   2. Разница во времени между текущей записью и предыдущей.
+     *   2. Разница во времени между текущей записью и предыдущей в секундах.
      *      Если текущая запись первая, то разница ищется между ней и собзданием объекта.
      *
      * При необходимости 3-им пунктом может быть текст сообщения. По умолчанию сообщение не добавляется.
@@ -65,7 +65,7 @@ class TimeLogger
             = $this->lastTime
             = microtime(true);
 
-        $note = 'TL : <' . $this->currentIndex . '> | time: ' . number_format($time, 6, '.', ' ');
+        $note = 'TL : <' . $this->currentIndex . '> | time: ' . number_format($time, 6, '.', ' ') . ' sec';
 
         if ($msg) $note .= ' | ' . $msg;
 
@@ -87,16 +87,26 @@ class TimeLogger
 
     /**
      * По умолчанию находит время между первой и последней записью в логфайл.
-     * При необходимости можно произвольно выбрать индексы и найти время между ними.
+     * При необходимости можно найти интервал между произвольно выбранных индексов среди существующих записей
+     * и, если последний параметр равен true, записать его в логфайл.
      *
      * @param int $from
      * @param int $to
+     * @param bool $record
      * @return float
      */
-    public function findTimeSum(int $from = 0, int $to = 0): float
+    public function findInterval(int $from = 0, int $to = 0, bool $record = false): float
     {
         foreach ([&$from, &$to] as &$i) if ($i > ($this->currentIndex - 1)) $i = ($this->currentIndex - 1);
 
-        return abs($this->timeStorage[$to] - $this->timeStorage[$from]);
+        $result = abs($this->timeStorage[$to] - $this->timeStorage[$from]);
+
+        if ($record) file_put_contents(
+            $this->file,
+            ('TL : interval <' . $from . '> - <' . $to . '> | time: ' . number_format($result, 6, '.', ' ') . ' sec' . PHP_EOL),
+            FILE_APPEND
+        );
+
+        return $result;
     }
 }
