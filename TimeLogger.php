@@ -87,16 +87,26 @@ class TimeLogger
 
     /**
      * По умолчанию находит время между первой и последней записью в логфайл.
-     * При необходимости можно найти интервал между произвольно выбранных индексов среди существующих записей.
+     * При необходимости можно найти интервал между произвольно выбранных индексов среди существующих записей
+     * и, если последний параметр равен true, записать его в логфайл.
      *
      * @param int $from
      * @param int $to
+     * @param bool $record
      * @return float
      */
-    public function findInterval(int $from = 0, int $to = 0): float
+    public function findInterval(int $from = 0, int $to = 0, bool $record = false): float
     {
         foreach ([&$from, &$to] as &$i) if ($i > ($this->currentIndex - 1)) $i = ($this->currentIndex - 1);
 
-        return abs($this->timeStorage[$to] - $this->timeStorage[$from]);
+        $result = abs($this->timeStorage[$to] - $this->timeStorage[$from]);
+
+        if ($record) file_put_contents(
+            $this->file,
+            ('TL : interval <' . $from . '> - <' . $to . '> | time: ' . number_format($result, 6, '.', ' ') . ' sec' . PHP_EOL),
+            FILE_APPEND
+        );
+
+        return $result;
     }
 }
